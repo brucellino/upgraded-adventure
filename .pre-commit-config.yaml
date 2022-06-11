@@ -10,4 +10,7 @@ repos:
   rev: 2.1.6  # or specific git tag
   hooks:
     - id: bundler-audit
+    - id: check-mailmap
+    - id: git-check  # Configure in .gitattributes
+    - id: git-dirty  # Configure in .gitignore
     - id: markdownlint # Configure in .mdlrc
