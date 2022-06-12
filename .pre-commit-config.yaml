@@ -14,3 +14,10 @@ repos:
     - id: git-check  # Configure in .gitattributes
     - id: git-dirty  # Configure in .gitignore
     - id: markdownlint # Configure in .mdlrc
+    - id: bundler-audit
+    - id: forbid-binary
+- repo: https://github.com/klieret/jekyll-relative-url-check
+  rev: v2.0.1
+  hooks:
+    - id: jekyll-relative-url-check-html
+    - id: jekyll-relative-url-check-markdown
