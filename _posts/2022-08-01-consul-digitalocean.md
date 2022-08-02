@@ -330,7 +330,7 @@ However, since `cloud-init` itself runs as a systemd unit, we need to ensure tha
 What is more it also needs to be started only after the cloud init user scripts in `runcmd` have completed else the executable `consul` won't be present yet.
 I haven't figured out exactly how to determine what systemd event should trigger the start of the Consul service, other than it should happen when cloud init ends, but [this answer](https://stackoverflow.com/a/68099751/2707870) gives some clues.
 
-In the meantime
+In the meantime, `remote-exec` provisioner runs a script to wait for the cloud-init process to finish before starting the Consul service:
 
 {% highlight hcl %}
 connection {
@@ -349,6 +349,8 @@ connection {
     ]
   }
 {% endhighlight %}
+
+Cloud auto-join takes care of the rest.
 
 A final consideration on this point was where and how to persist the Raft data.
 Currently, the data is written to a Digital Ocean volume mounted into the droplet, which is then attached to the next server in the group. However the volume can only be attached to one droplet at a time, meaning that if we want to perform a rolling update, we need to _first_ destroy the droplet, detach the volume, then create the new droplet and attach the volume.
