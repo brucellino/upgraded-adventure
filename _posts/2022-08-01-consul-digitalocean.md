@@ -26,24 +26,19 @@ Now, I'm not a newbie to Terraform or Consul, and Digital Ocean is probably the 
 
 That being said though, there are a few things which tripped me up on the way, which the cool kids are calling "learnings" these days (ugh, gross).
 
-<!-- Axes of competence -->
-
-<!--
-
-- architecture and design
-- networking design
-- SSL/TLS
-- terraform
-- Consul
-- Cloud platform (DO)
-
- -->
-
 ## What are we building
 
-The first lesson is one in design
+The first lesson is one in design.
 It's rare that I get the chance to build something from scratch, so I don't have much experience when it comes to designing the architecture of something, even something as simple as this.
 That is not to say that it is particularly _difficult_, just that it's an unexercised muscle.
+
+### Axes of competence
+
+Before starting out, I wanted to have an honest self-assessment of how hard this _should_ be, according to my competence.
+
+<div id="chart"></div>
+
+### Architecture
 
 I took the [Consul Reference Architecture](https://learn.hashicorp.com/tutorials/consul/reference-architecture) as the starting point for creating a module which would deploy something similar to it in Digital Ocean.
 Similar to the [datacenter deployment guide](https://learn.hashicorp.com/tutorials/consul/deployment-guide?in=consul/production-deploy) I started with a single availability zone AMS3.
@@ -65,6 +60,7 @@ The goals for this architecture are, in no particular order:
 1. **Complete**: The architecture should be _fully_ described by the modules
 1. **Zero-touch deploy**: This should not require human intervention. This goal is similar to the concise goal, but emphasises automation.
 1. **Zero-trust**: Sensitive data should be retrieved by authorized actors, rather than allowing access to it implicitly.
+1. **Minimal knowledge**: No knowledge about the deploy environment should be assumed, in order to make it re-usable in different situations.
 1. **Immutable and idempotent**: The state should be declared as code, and only change when changes to the code are made.
 
 From an operator's point of view, we should have the experience of setting a few variables, and running `terraform deploy`.
@@ -151,9 +147,19 @@ I call them "speedbumps", since they slowed me down a bit and made me think abou
 
 Since we start from scratch, the IP addresses are not known up front.
 We would need to know the private IP of the agent, so that we can tell servers to advertise on an address that the other members of the cluster can reach it.
-Luckily
+Of course, if one explicitly declares the network configuration  assigning IP addresses to cluster nodes, these values can be passed to the Consul configuration, but this approach does not make much sense in a dynamic environment where the cloud does the work for you.
+
+Without knowledge of the network configuration, we need to use a [template](https://www.consul.io/docs/agent/config/cli-flags#_client) to look up the interface address.
 
 #### Cluster joining
+
+Not only do the agents need to know details about themselves (which IP/port to bind to and advertise on), but also details about _other_ agents, in order to join them to the cluster.
+Since we want zero-touch deployments, we can't have a multi-stage deployment where we first create the agents, then discover facts about them, and then manually join them to each other -- we need a mechanism whereby agents can _discover_ themselves.
+
+In order to do this, Consul provides a `retry_join` mechanism, and specifically for cloud deployments is able to interrogate the cloud provider to ask it for information about the agents.
+In our case, we tag the droplets with `consul-server` and then configure the [Cloud Auto Join for Digital Ocean](https://www.consul.io/docs/install/cloud-auto-join#digital-ocean).
+This requires a token to authorise calls to the Digital Ocean API, which is in turn kept in a separate Vault KV store[^DOSecretsMount].
+This is then injected into the consul configuration as part of the user-data template, [shown below](#cloud-config-template).
 
 #### Key generation
 
@@ -171,7 +177,7 @@ However, starting with fresh deploy, we need to _generate_ it.
 
 This looks like a _Catch-22_ at first glance, because we can't generate an encryption key without Consul, but  we can't deploy Consul without an encryption key.
 What is more, if it's generated on one Consul server, how is it then shared with the others?
-I spent a few hours thinking about this, tempted to revert back to the _"Deus ex Machina"_ approach of pre-registering a key in a Vault KV store... until I read [the documentation](https://www.consul.io/docs/security/encryption#gossip-encryption) again:
+I spent a few hours thinking about this, tempted to revert to the _"Deus ex Machina"_ approach of pre-registering a key in a Vault KV store... until I read [the documentation](https://www.consul.io/docs/security/encryption#gossip-encryption) again:
 
 > The key must be 32-bytes, Base64 encoded.
 
@@ -184,7 +190,7 @@ resource "random_id" "key" {
 }
 {% endhighlight %}
 
-and then passed it into the userdata  template:
+and then passed it into the user data  template:
 
 {% highlight hcl %}
 resource "digitalocean_droplet" "server" {
@@ -211,9 +217,254 @@ resource "digitalocean_droplet" "server" {
 }
 {% endhighlight %}
 
-#### Service start
+#### Data persistence and zero-downtime rolling changes
+
+The Consul cluster is co-ordinated by a set of agents acting as servers.
+As we have mentioned before, [one of the design goals](#design-goals) was to have immutable images, so that when changes are required, we create an entirely new image and replace the old one with the new one.
+During these changes, we do not want the applications and other parts of infrastructure which depend on Consul for service discovery, _etc_ to be impaacted.
+This means that:
+
+1. The cluster should not lose quorum during changes
+1. The cluster state should be persisted across changes
+
+Data in the cluster state is stored in a shared database replicated with Raft.
+When making changes, we can ensure that there are always servers by using the [Terraform resource lifecycle meta argument](https://www.terraform.io/language/meta-arguments/lifecycle) for the droplets:
+
+{% highlight hcl %}
+lifecycle {
+  create_before_destroy = true
+}
+{% endhighlight %}
+
+This will ensure that droplets belonging to the previous state are only deleted once the new droplets have been created.
+**However**, this refers to the droplet state, not to the Consul state!
+Since cloud config takes a few minutes to complete, but Terraform will destroy old droplets as soon as the API reports that the new new droplet is "ready", this will put our cluster into an outage for a few minutes while the new droplets come up.
+
+What is more, we will lose the Raft data on the old droplets if it is not propagated somehow to the new ones.
+
+There are [new features in Terraform 1.2.0](https://github.com/hashicorp/terraform/blob/v1.2.0/CHANGELOG.md) for handling [pre- and post-conditions](https://www.terraform.io/language/expressions/custom-conditions#preconditions-and-postconditions).
+One could imagine that a post-condition would be a guarantee that new Consul servers are up, but polling the health check url.
+One can imagine a post-condition such as:
+
+{% highlight hcl %}
+lifecycle {
+    precondition {
+      condition     = contains([201, 200, 204], self.status_code)
+      error_message = "Consul is not healthy"
+    }
+  }
+{% endhighlight %}
+
+In this case, we need a `data` block for the HTTP check on the loadbalancer, but that data won't exist until the first deployment is ready.
+This sounds again like a Catch-22, but yet again reading the documentation carefully seems to show a way out:
+
+> In most cases, we do not recommend including both a data block and a resource block that both represent the same object in the same configuration. Doing so can prevent Terraform from understanding that the data block result can be affected by changes in the resource block. However, when you need to check a result of a resource block that the resource itself does not directly export, you can use a data block to check that object safely as long as you place the check as a direct postcondition of the data block. This tells Terraform that the data block is serving as a check of an object defined elsewhere, allowing Terraform to perform actions in the correct order.
+
+So, if a data block is to serve specifically as a postcondition check it should only succeed if the Consul service returns healthy.
+
+Creating these checks and adding them to the resources as follows
+
+{% highlight hcl %}
+{% raw %}
+data "http" "consul_health" {
+  url = join("", ["http://", digitalocean_loadbalancer.external.ip, "/v1/health/service/consul"])
+  lifecycle {
+    # Add lifecycle to server droplet resources too
+    postcondition {
+      condition     = contains([201, 200, 204], self.status_code)
+      error_message = "Consul service is not healthy"
+    }
+  }
+}
+{% endraw %}
+{% endhighlight %}
+
+managed to generate a plan[^lb-droplets].
+
+Unfortunately, as [described below](#service-start), the consul service doesn't start in time for the check to pass during the Terraform apply stage:
+
+{% highlight bash %}
+│ Error: Resource postcondition failed
+│
+│   on ../../../modules/terraform-digitalocean-consul/main.tf line 37, in data "http" "consul_health":
+│   37:       condition     = contains([201, 200, 204], self.status_code)
+│     ├────────────────
+│     │ self.status_code is 503
+│
+│ Consul service is not healthy
+
+{% endhighlight %}
+
+So, there needs to be some stabilisation time before the check is conducted.
+Perhaps I could do this with a [`remote-exec` provisioner](https://www.terraform.io/language/resources/provisioners/remote-exec).
+
+Zero-touch requires that we run `terraform apply` and then go the beach.
+This means that the droplets need to be configured _and the Consul service needs to be running_ with agents and servers all auto-joined to the cluster without manual intervention.
+
+The Consul process itself is started by a systemd unit. This is created and enabled by Cloud Init via `write-files` which also creates the `/etc/consul.d/consul.hcl` configuration file.
+However, since `cloud-init` itself runs as a systemd unit, we need to ensure that the Consul service is started only after cloud init has finished.
+What is more it also needs to be started only after the cloud init user scripts in `runcmd` have completed else the executable `consul` won't be present yet.
+I haven't figured out exactly how to determine what systemd event should trigger the start of the Consul service, other than it should happen when cloud init ends, but [this answer](https://stackoverflow.com/a/68099751/2707870) gives some clues.
+
+In the meantime
+
+{% highlight hcl %}
+connection {
+    type = "ssh"
+    user = "root"
+    host = self.ipv4_address
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "echo waiting for consul to be present",
+      "while [ ! -f /usr/local/bin/consul ] ; do sleep 10 ; done",
+      "while [[ ! $(systemctl list-unit-files | grep consul) ]] ; do echo waiting for consul systemd unit ; done",
+      "service consul start",
+      "echo waiting for servers to stabilise",
+      "sleep 20"
+    ]
+  }
+{% endhighlight %}
+
+A final consideration on this point was where and how to persist the Raft data.
+Currently, the data is written to a Digital Ocean volume mounted into the droplet, which is then attached to the next server in the group. However the volume can only be attached to one droplet at a time, meaning that if we want to perform a rolling update, we need to _first_ destroy the droplet, detach the volume, then create the new droplet and attach the volume.
+But in order to maintain quorum this needs to be done _one at a time_.
+
+### Cloud Config template
+
+Most of the heavy lifting is done in the cloud-config template.
+For completeness, I show it below.
+
+{% highlight yaml %}
+{% raw %}
+
+# cloud-config
+
+manage_etc_hosts: false
+manage_resolv_conf: true
+mounts:
+
+- [ /dev/disk/by-id/scsi-0DO_Volume_consul-data-${count}, /consul, ext4, "discard,defaults,noatime" ]
+users:
+- name: ${username}
+    ssh-authorized-keys:
+  - ${ssh_pub_key}
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+packages:
+- curl
+- jq
+- net-tools
+manage-resolv-conf: true
+resolv_conf:
+  nameservers:
+  - '${dns_recursor_ip}'
+  searchdomains:
+  - ${domain}
+  - ${project}
+  domain: ${domain}
+
+write_files:
+
+- path: /etc/consul.d/consul.hcl
+    content: |
+      encrypt = "${encrypt}"
+      %{if server }bootstrap_expect = ${servers}%{ endif }
+      datacenter = "${datacenter}"
+      %{if server }
+      auto_encrypt {
+        allow_tls = true
+      }
+      %{ endif }
+      data_dir = "/consul/"
+      log_level = "INFO"
+      ui_config {
+        enabled =  true
+      }
+      server = ${server}
+      client_addr = "0.0.0.0"
+      recursors = ["${recursor_ip}"]
+      bind_addr = "0.0.0.0"
+      {% raw %}
+      advertise_addr = "{{ GetInterfaceIP \"eth1\" }}"
+      {% endraw %}
+      retry_join = ["provider=digitalocean region=${region} tag_name=${tag} api_token=${join_token}"]
+- path: /usr/lib/systemd/system/consul.service
+    content: |
+      [Unit]
+      Description="HashiCorp Consul - A service mesh solution"
+      Documentation=<https://www.consul.io/>
+      Requires=network-online.target
+      Requires=cloud-init.target
+      ConditionFileNotEmpty=/etc/consul.d/consul.hcl
+      ConditionFileNotEmpty=/usr/local/bin/consul
+
+      [Service]
+      Type=notify
+      User=root
+      Group=root
+      ExecStart=/usr/local/bin/consul agent \
+        -auto-reload-config \
+        -config-dir=/etc/consul.d/
+      ExecReload=/bin/kill --signal HUP $MAINPID
+      KillMode=process
+      KillSignal=SIGTERM
+      Restart=on-failure
+      LimitNOFILE=65536
+      StandardOutput=append:/var/log/consul.log
+      AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+
+# Remove existing entries that point to localhost
+
+- sed -r 's/^._consul-._$//' /etc/hosts
+
+# Get Consul
+
+- |
+    curl -fL <https://releases.hashicorp.com/consul/>${consul_version}/consul_${consul_version}_linux_amd64.zip \
+    | gunzip -> /usr/local/bin/consul
+- chmod a+x  /usr/local/bin/consul
+- consul -version
+- systemctl daemon-reload
+
+# Enable the consul service
+
+- systemctl enable consul
+{% endraw %}
+{% endhighlight %}
+
+## Final considerations
+
+It took about a week of work to create a Terraform module for Consul on Digital Ocean.
+At the time of writing, there doesn't seem to be one in the public registry, so at least I seem to be making a tiny dent in the universe.
+
+I should point out that a lot of the speedbumps here were due to the fact that the cloud provider doesn't have a very sophisticated set of services.
+Server stabilisation and rolling updates are much easier with [AWS autoscaling target groups](https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html) for example.
+However, I expect this to be the case for many on-premise private cloud providers like VMWare or bare-metal providers, so it is a very useful exercise to implement the lifecycle logic in the module itself.
+
+Overall, I find the simplicity of Digital Ocean to be a nett feature
+It provides just enough in terms of services to treat as IaaS, while being _very_ cost effective.
+What does that mean? I spent about about 5 USD in resources to develop this module -- about a week's worth of terraforming Digital Ocean.
+
+The next steps will be to include the Consul ACL token and TLS certificates into this module.
+
+The code accompanying this post is available at:
+
+- [Terraform module](https://github.com/brucellino/terraform-digitalocean-consul)
+- [Terraform statement](https://github.com/brucellino/terraform-hashi-cluster-digitalocean)
+
+<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="{{ site.baseurl }}/js/radar.js"></script>
+<script type="text/javascript" src="{{ site.baseurl }}/js/competence.js"></script>
 
 ---
 
 [^certification]: Some might say that I should just spend the time and money on a Hashicorp certification. Although I don't disagree with this sentiment, I would also point out that many folks like me only learn how something really works when they break it. It's the physicist in me... I feel far more comfortable saying that I am proficient in a tool when I have used it to solve a problem.
 [^lb-dns]: The loadbalancer should probably be replaced with some good old DNS records.
+[^DOSecretsMount]: It would be really nice if Vault supported a Digital Ocean secrets mount, such as the [AWS](https://www.vaultproject.io/docs/secrets/aws), [Azure](https://www.vaultproject.io/docs/secrets/azure) and [Alibaba](https://www.vaultproject.io/docs/secrets/alicloud), _etc_.
+[^lb-droplets]: I originally added the droplets by ID to the load balancer, creating an explicit relationship between them. This broke the DAG, so I had to configure the LB to add droplets by tag instead.
