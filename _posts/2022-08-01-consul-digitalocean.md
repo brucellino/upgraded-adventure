@@ -12,6 +12,7 @@ description: A few more steps towards a production-grade Terraform module for Co
 **How far is a production-ready Terraform module from the tutorial?**
 
 _In my estimation, and calibrated to my skill level, it's about 3-5 days of work._
+
 Read further for how I came to this estimation, and what it means.
 
 ## 3/5 Hashifinity Stones
@@ -37,6 +38,9 @@ That is not to say that it is particularly _difficult_, just that it's an unexer
 Before starting out, I wanted to have an honest self-assessment of how hard this _should_ be, according to my competence.
 
 <div id="chart"></div>
+
+Although I feel very confident in the tooling, and the cloud provider is simple enough to easily know it well, I do not yet feel confident in my skills as an architect.
+In this case, the architecture is provided by the Consul reference architecture, so I really just need to design the implementation, which I feel a bit more comfortable in.
 
 ### Architecture
 
@@ -385,9 +389,7 @@ write_files:
       client_addr = "0.0.0.0"
       recursors = ["${recursor_ip}"]
       bind_addr = "0.0.0.0"
-      {% raw %}
       advertise_addr = "{{ GetInterfaceIP \"eth1\" }}"
-      {% endraw %}
       retry_join = ["provider=digitalocean region=${region} tag_name=${tag} api_token=${join_token}"]
 - path: /usr/lib/systemd/system/consul.service
     content: |
@@ -443,13 +445,18 @@ runcmd:
 It took about a week of work to create a Terraform module for Consul on Digital Ocean.
 At the time of writing, there doesn't seem to be one in the public registry, so at least I seem to be making a tiny dent in the universe.
 
+Overall, I find the simplicity of Digital Ocean to be a nett feature
+It provides just enough in terms of services to treat as IaaS, while being _very_ cost effective.
+What does that mean? I spent about about 5 USD in resources to develop this module -- about a week's worth of terraforming Digital Ocean.
+**It takes under four minutes** to deploy this and costs **less than USD 5 a month to run**.
+
 I should point out that a lot of the speedbumps here were due to the fact that the cloud provider doesn't have a very sophisticated set of services.
 Server stabilisation and rolling updates are much easier with [AWS autoscaling target groups](https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html) for example.
 However, I expect this to be the case for many on-premise private cloud providers like VMWare or bare-metal providers, so it is a very useful exercise to implement the lifecycle logic in the module itself.
 
-Overall, I find the simplicity of Digital Ocean to be a nett feature
-It provides just enough in terms of services to treat as IaaS, while being _very_ cost effective.
-What does that mean? I spent about about 5 USD in resources to develop this module -- about a week's worth of terraforming Digital Ocean.
+Finally, I took the new post- and pre-conditions for a drive.
+At first they can seem somewhat counter-intuitive, but once you do things the "Hashi" way, I can see how they work well.
+This is, in my opinion, a very welcome addition to the Terraform language, obviating the need for extra tooling.
 
 The next steps will be to include the Consul ACL token and TLS certificates into this module.
 
@@ -461,6 +468,14 @@ The code accompanying this post is available at:
 <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript" src="{{ site.baseurl }}/js/radar.js"></script>
 <script type="text/javascript" src="{{ site.baseurl }}/js/competence.js"></script>
+
+Stay tuned for the next iteration of Hashi on Digital Ocean -- deploying a Vault cluster.
+
+If you're keen on running this exercise yourself, please use my referral link to get some free credits on Digital Ocean.
+
+<div style="text-align: center;">
+  <a href="https://www.digitalocean.com/?refcode=ed3b69c0eec6&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%202.svg" alt="DigitalOcean Referral Badge" /></a>
+</div>
 
 ---
 
