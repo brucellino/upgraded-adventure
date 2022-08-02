@@ -2,6 +2,26 @@
 title: Consul in Digital Ocean (part II)
 description: A few more steps towards a production-grade Terraform module for Consul in Digital Ocean
 ---
+- [3/5 Hashifinity Stones](#35-hashifinity-stones)
+- [What are we building](#what-are-we-building)
+  - [Axes of competence](#axes-of-competence)
+  - [Architecture](#architecture)
+  - [Design goals](#design-goals)
+- [Implementation](#implementation)
+  - [Tooling](#tooling)
+  - [Speedbumps](#speedbumps)
+    - [Bind, advertise, client addresses](#bind-advertise-client-addresses)
+    - [Cluster joining](#cluster-joining)
+    - [Key generation](#key-generation)
+    - [Data persistence and zero-downtime rolling changes](#data-persistence-and-zero-downtime-rolling-changes)
+- [Add lifecycle to server droplet resources too](#add-lifecycle-to-server-droplet-resources-too)
+  - [Cloud Config template](#cloud-config-template)
+- [cloud-config](#cloud-config)
+- [Remove existing entries that point to localhost](#remove-existing-entries-that-point-to-localhost)
+- [Get Consul](#get-consul)
+- [Enable the consul service](#enable-the-consul-service)
+  - [Final considerations](#final-considerations)
+[Footnotes](#footnotes)
 
 <div style="text-align: center;">
   <a href="https://www.digitalocean.com/?refcode=ed3b69c0eec6&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%202.svg" alt="DigitalOcean Referral Badge" /></a>
@@ -13,6 +33,7 @@ description: A few more steps towards a production-grade Terraform module for Co
 
 _In my estimation, and calibrated to my skill level, it's about 3-5 days of work._
 
+In this
 Read further for how I came to this estimation, and what it means.
 
 ## 3/5 Hashifinity Stones
@@ -477,7 +498,7 @@ If you're keen on running this exercise yourself, please use my referral link to
   <a href="https://www.digitalocean.com/?refcode=ed3b69c0eec6&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%202.svg" alt="DigitalOcean Referral Badge" /></a>
 </div>
 
----
+#### Footnotes
 
 [^certification]: Some might say that I should just spend the time and money on a Hashicorp certification. Although I don't disagree with this sentiment, I would also point out that many folks like me only learn how something really works when they break it. It's the physicist in me... I feel far more comfortable saying that I am proficient in a tool when I have used it to solve a problem.
 [^lb-dns]: The loadbalancer should probably be replaced with some good old DNS records.
