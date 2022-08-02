@@ -33,7 +33,6 @@ description: A few more steps towards a production-grade Terraform module for Co
 
 _In my estimation, and calibrated to my skill level, it's about 3-5 days of work._
 
-In this
 Read further for how I came to this estimation, and what it means.
 
 ## 3/5 Hashifinity Stones
