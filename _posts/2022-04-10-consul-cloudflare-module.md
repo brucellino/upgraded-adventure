@@ -2,6 +2,13 @@
 title: Terraform off the beaten track
 description: |
   Got $5 and some time? Here's a Terraform Module for Consul on DigitalOcean using Cloudflare
+category: Terraform
+tags:
+- terraform
+- consul
+- hashicorp
+- cloudflare
+- digital-ocean
 ---
 
 - [Choosing a stack: design and priorities](#choosing-a-stack-design-and-priorities)
@@ -164,7 +171,7 @@ The second is somewhat trivial but I found it delightful, which was the use of a
 {% highlight hcl %}
 variable "consul_ports" {
   type        = map(number)
-  description = "Ports to expose Consul on. See https://www.consul.io/docs/install/ports"
+  description = "Ports to expose Consul on. See <https://www.consul.io/docs/install/ports>"
   default = {
     "dns"      = 8600
     "http"     = 8500

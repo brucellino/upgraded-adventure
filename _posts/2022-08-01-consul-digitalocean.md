@@ -1,6 +1,14 @@
 ---
 title: Consul in Digital Ocean (part II)
 description: A few more steps towards a production-grade Terraform module for Consul in Digital Ocean
+category: Terraform
+tags:
+  - Consul
+  - Cloud
+  - Terraform
+  - Digital Ocean
+  - Continuous Delivery
+toc: true
 ---
 - [3/5 Hashifinity Stones](#35-hashifinity-stones)
 - [What are we building](#what-are-we-building)

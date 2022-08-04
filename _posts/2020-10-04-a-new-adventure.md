@@ -1,6 +1,9 @@
 ---
 title: A new adventure
 description: Things change, try to keep up
+tags:
+- personal
+- about
 ---
 
 ## A change in perspective
