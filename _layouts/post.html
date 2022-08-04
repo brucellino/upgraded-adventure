@@ -14,6 +14,11 @@ layout: default
   </header>
   <br>
   <section class="post">
-    {{ content }}
+    <div id="table-of-contents">
+      {{ content | toc_only }}
+    </div>
+    <div  id="markdown-content">
+      {{ content | inject_anchors }}
+    </div>
   </section>
 </article>
