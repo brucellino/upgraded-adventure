@@ -10,6 +10,7 @@ tags:
   - Continuous Delivery
 toc: true
 ---
+
 - [3/5 Hashifinity Stones](#35-hashifinity-stones)
 - [What are we building](#what-are-we-building)
   - [Axes of competence](#axes-of-competence)
@@ -425,7 +426,7 @@ write_files:
     content: |
       [Unit]
       Description="HashiCorp Consul - A service mesh solution"
-      Documentation=<https://www.consul.io/>
+      Documentation=https://www.consul.io/
       Requires=network-online.target
       Requires=cloud-init.target
       ConditionFileNotEmpty=/etc/consul.d/consul.hcl
@@ -507,7 +508,7 @@ If you're keen on running this exercise yourself, please use my referral link to
   <a href="https://www.digitalocean.com/?refcode=ed3b69c0eec6&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%202.svg" alt="DigitalOcean Referral Badge" /></a>
 </div>
 
-#### Footnotes
+### Footnotes
 
 [^certification]: Some might say that I should just spend the time and money on a Hashicorp certification. Although I don't disagree with this sentiment, I would also point out that many folks like me only learn how something really works when they break it. It's the physicist in me... I feel far more comfortable saying that I am proficient in a tool when I have used it to solve a problem.
 [^lb-dns]: The loadbalancer should probably be replaced with some good old DNS records.

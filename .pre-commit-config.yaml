@@ -11,15 +11,16 @@ repos:
   hooks:
     - id: bundler-audit
     - id: check-mailmap
-    - id: git-dirty  # Configure in .gitignore
-    - id: markdownlint # Configure in .mdlrc
     - id: bundler-audit
-    - id: forbid-binary
 - repo: https://github.com/klieret/jekyll-relative-url-check
   rev: v2.0.1
   hooks:
     - id: jekyll-relative-url-check-html
     - id: jekyll-relative-url-check-markdown
+- repo: https://github.com/markdownlint/markdownlint
+  rev: v0.12.0
+  hooks:
+    - id: markdownlint
 ci:
   autofix_commit_msg: |
     [pre-commit.ci] auto fixes from pre-commit.com hooks

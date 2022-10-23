@@ -1,19 +1,21 @@
 ---
 layout: default
 ---
+Find posts on
 <div class="tags">
-{% for topitem in site.tags  %}
-  <a href="{{ site.baseurl }}/tags/#{{ topitem[0] }}" class="tag">{{  topitem[0] }}</a>
+{% for tag in site.tags %}
+  <a href="{{ site.baseurl }}/tags/#{{ tag[0] }}" class="tag">{{  tag[0] }}</a>
 {% endfor %}
 </div>
 <br>
-
-<h2 class="animate__animated animate__bounce">Topics:</h2>
+{{ site. categories }}
+<h3 class="animate__animated animate__bounce">Topics:</h3>
 Read my thoughts and work on specific topics from the list below.
 <br>
 <div class="categories">
+  {% assign sorted_categories = site.categories %}
 {% for catitem in site.categories  %}
-  <a href="#{{ catitem[0] }}">{{  catitem[0] }}</a>
+  <a href="#{{ catitem[0] }}">{{  catitem[0] | downcase }}</a>
 {% endfor %}
 </div>
 
