@@ -11,7 +11,6 @@ repos:
   hooks:
     - id: bundler-audit
     - id: check-mailmap
-    - id: bundler-audit
 - repo: https://github.com/klieret/jekyll-relative-url-check
   rev: v2.0.1
   hooks:
@@ -28,4 +27,5 @@ ci:
     for more information, see https://pre-commit.ci
   autofix_prs: true
   autoupdate_schedule: weekly
-  skip: []
+  skip:
+    - bundler-audit
