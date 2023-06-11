@@ -106,7 +106,7 @@ While I could use the attributes from the `digitalocean_kubernetes_cluster` to w
 I found this somewhat inelegant, based on the criteria I've set myself, and I would have preferred to _declare_ the domain name in some way.
 I ended up having to pass it to the CLI via the command line in the `local_exec` provisioner used in the `null_resource` representing the Krateo installation:
 
-{% begin highlight hcl %}
+{% highlight hcl %}
 echo '${var.cf_zone}' | ./krateo init --kubeconfig ${local_file.k8sconfig.filename}"
 {% endhighlight %}
 
@@ -120,7 +120,7 @@ Since Krateo isn't in the Terraform state either, only the `null_resource` repre
 Luckily, Krateo implements a cleanup target for its CLI, so we can invoke that at destroy time by adding a relevant Terraform provisioner, which should run.
 Putting it all together:
 
-{% begin highlight hcl %}
+{% highlight hcl %}
 resource "null_resource" "k_install" {
   triggers = {
     kube_config = local_file.k8sconfig.filename
