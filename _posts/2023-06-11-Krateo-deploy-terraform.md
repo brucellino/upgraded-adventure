@@ -147,12 +147,95 @@ resource "null_resource" "k_install" {
 
 ### Change the endpoint
 
-### Unpredictable loadbalancer
+What about if I wanted to change the endpoint?
+Krateo expects, as mentioned above, an input parameter to allow it to tell the ingress controller how to expose its services. This is a hardcoded to `app.<domain>` where `<domain>` is the top-level domain that you are deploying Krateo to.
+This is almost certainly something that can be changed by applying a different configuration, but it would have been nice to have this configurable via the same `init` function.
 
-### SSL errors
+The good news was that running `init` again with a different TLD resulted in the desired configuration being applied.
+
+### Unpredictable load balancer name
+
+During installation, Krateo creates an ingress controller which manages a Digital Ocean loadbalancer.
+The public IP of that load balancer is required in order to add the `A` record to the DNS in order to interact with the Krateo App, but since this load balancer is managed by Krateo, it is not known to the Terraform state.
+
+I first tried to add an external loadbalancer, which I wanted to tell Krateo about, but that didn't work out of the box - Krateo ignored it and added it's own.
+The `data` block that should discover this loadbalancer does depend on the Krateo installation `null_resource`, but there is a delay between when Krateo exits and when the loadbalancer becomes available.
+However, the real deal breaker is the inability to **declare the name of the loadbalancer** _a-priori_, which necessarily introduces esoteric knowledge -- magic information that I just need to know and can't derive.
+
+I ended up breaking requirements 2 and 3 described in the beginning of this post, by
+
+1. having to add esoteric knowledge (the name of the Krateo-managed loadbalancer)
+1. having to run terraform twice (ugh, gross) in order to pick up the load balancer
+
+{% highlight hcl %}
+# LB created by krateo.
+data "digitalocean_loadbalancer" "krateo" {
+  depends_on = [null_resource.k_install]
+  # id         = "d72d4916-9023-4616-b292-33032dda4799" # <- obtained from the console
+  name = "a6434671d1dde4647804e9cd6261d5d6" # <- obtained from the console.
+}
+
+resource "cloudflare_record" "k" {
+  zone_id = data.cloudflare_zone.k.id
+  type    = "A"
+  proxied = true
+  name    = join(".", ["app", var.cf_zone])
+  value   = data.digitalocean_loadbalancer.krateo.ip
+}
+{% endhighlight %}
+
+The `name` attribute, in my ignorance of how to use Krateo effectively, cannot be known in advance, and is computed by Krateo.
+I could probably add a null resource to run a `doctl` in order to look up the load balancer and pass its attributes to the `cloudflare_record` resource, or a `kubectl` to do something similar, but I didn't want to add extra tooling at this point and indeed, I wanted to force the issue by surfacing this "problem".
+
+This is, in my opinion, a documentation problem more than a design problem, since I can definitely imagine ways to get around this, but they all make me throw up in my mouth a bit.
+
+### SSL and ingress errors
+
+The showstopper for me was the inability to actually access the `app.<domain>` URL due to SSL and ingress errors.
+Behind the scenes, I could see that all Krateo components had been installed, and everything was reporting healthy.
+However, I was unable to access the UI, since the URL gave [HTTP 522](https://http.cat/522) errors (timeouts).
+I didn't spend too much time investigating, but my suspicion was that
+
+1. A firewall rule was blocking the connection between the LB and the services in the cluster - either at the infrastructure (Digital Ocean) level, or at the API gateway[^kong] level
+1. Somewhere a selector was improperly configured -- perhaps an authentication service was missing which the API gateway was sending requests to,  resulting in the 522
+
+Whatever the true reason, I'm confident that this could be resolved by adding a few `kubernetes_xyz` resources using the [Terraform Kubernetes provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest).
 
 ## Summary
+
+The goal of this little exercise was to get my hands dirty with Krateo, while staying true to some of the engineering principles I hold dear.
+I was about 70% successful at this.
+I have no doubt that it's possible -- easy even -- to deploy Krateo in this way, with a bit more understanding of how it is supposed to work.
+I have a suspicion that a bit more detail in the documentation could have helped, or perhaps a tutorial showing how to modify the vanilla installation with a few `kubectl`s after `krateo init`.
+I don't expect the Krateo CLI to do everything after all!
+
+I should also remind the reader that deploying Krateo is very likely a one-time event.
+This is a service which will act as the control plane for your entire infrastructure after all, so I don't expect folks to be doing `krateo init` once a week in the end-use environment.
+However, for people like me who will eventually end up doing it _for clients_, the process isn't 100% yet.
+
+### Who governs the governor
+
+There is however a deeper question which has bugged me throughout this exercise:
+
+> Am I doing it wrong?
+
+Krateo is for governance, it's supposed to contain the control plane for everything.
+But it needs to _emerge from the void_, something [I've written about before](https://hashiatho.me/blog/2022/10/22/base-platform/).
+The demos I've seen before start with "Create a Kubernetes cluster"[^other_resources], and I can imagine that when used in an enterprise environment, it will be a bit more like "Install Krateo into an existing cluster".
+But who creates those resources?
+It can't be Krateo because it doesn't exist in that environment yet.
+Does Krateo become self-aware after installation and resolve the bootstrap paradox by then managing itself?
+
+I can't shake the ghost of Godel whispering in my ear:
+
+> "the system is necessarily incomplete".
+
+If something extra is always required to invoke a governor, if this is indeed an emergent property, what is the most elegant way of expressing this?
+
+I do not have an answer to this yet. Do you?
 
 ---
 
 [^cost]: To give an idea, the cost for the cluster and associated resources was 10 euro cents for 3 hours of use.
+[^kong]: The API gateway used by Krateo is [Kong](https://konghq.com/)
+[^other_resources]: As we've seen, this is also not sufficient -- you need a few other resources in order to properly deploy Krateo. While the DNS domain is mentioned, there are indeed some other requirements which are not declared explicitly.
