@@ -114,7 +114,7 @@ Here we can see that we pass the cloudflare zone represented by the variable `cf
 
 The second thing I needed to take care of was to implement a way to cleanly remove all of the resources that were created _by Krateo_ during installation.
 In this small experiment, the only such resource was a loadbalancer created to expose the `app` service.
-This is in the Terraform state, but instead in the Krateo state.
+This is not in the Terraform state, but instead in the Krateo state.
 Since Krateo isn't in the Terraform state either, only the `null_resource` representing it -- so if we do a `terraform destroy`, the resources that Terraform knows about will be destroyed, but _not those Krateo made_.
 
 Luckily, Krateo implements a cleanup target for its CLI, so we can invoke that at destroy time by adding a relevant Terraform provisioner, which should run.
