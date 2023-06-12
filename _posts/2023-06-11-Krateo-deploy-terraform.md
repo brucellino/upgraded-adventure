@@ -85,7 +85,7 @@ The default approach would be to
 This kind of imperative, step-by-step approach is prone to being unreliable, and is one of the main reasons that [declarative formats are strongly suggested](https://12factor.net/).
 Yes, we can codify these steps into a pipeline, and that's a great start if there's no alternative, but any pipeline can fail unpredictably.
 Besides the reliability of the pipeline, we're adding extra work by forcing steps to be taken, in a specific order.
-We have to keep several things in our head at the same time, which are not explicitly and irrevocably linked between them. In the software development world, this is the kind of thing that would compile fine, and then generate runtime errors, forcing the developer (operator in our case), to break a state of flow with ana interruption, go back and debug.
+We have to keep several things in our head at the same time, which are not explicitly and irrevocably linked between them. In the software development world, this is the kind of thing that would compile fine, and then generate runtime errors, forcing the developer (operator in our case), to break a state of flow with an interruption, go back and debug.
 
 Long story short, I really wanted to make the deployment as declarative as possible, so I chose to add a [`null_resource`](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) resource linked to the creation of the kubernetes cluster, in order to represent the imperative Krateo installation.
 
