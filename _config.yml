@@ -1,5 +1,6 @@
 # Site settings
 title: Upgraded Adventure
+encoding: utf-8
 description: 'Upgraded Adventures of Bruce Becker'
 url: 'https://www.brucellino.dev'
 baseurl: ''
