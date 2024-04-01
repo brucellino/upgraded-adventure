@@ -23,7 +23,6 @@ GEM
     commonmarker (0.23.10)
     concurrent-ruby (1.2.3)
     connection_pool (2.4.1)
-      ruby2_keywords
     dnsruby (1.71.0)
       simpleidn (~> 0.2.1)
     drb (2.2.1)
@@ -218,14 +217,10 @@ GEM
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     mercenary (0.3.6)
-    mini_portile2 (2.8.5)
     minima (2.5.1)
       jekyll (>= 3.5, < 5.0)
       jekyll-feed (~> 0.9)
       jekyll-seo-tag (~> 2.1)
-      mini_portile2 (~> 2.8.2)
-      racc (~> 1.4)
-    nokogiri (1.16.2-x86_64-linux)
     minitest (5.22.3)
     mutex_m (0.2.0)
     net-http (0.4.1)
@@ -275,6 +270,7 @@ PLATFORMS
 DEPENDENCIES
   github-pages (>= 208)
   jekyll-toc (~> 0.18.0)
+  jemoji (~> 0.13.0)
   webrick (~> 1.8)
 
 BUNDLED WITH
