@@ -11,6 +11,7 @@ tags:
   - Terraform
 ---
 Table of Contents
+
 - [Service registration vs service discovery](#service-registration-vs-service-discovery)
 - [Registering services in a modern service catalogue](#registering-services-in-a-modern-service-catalogue)
 - [Using Consul as Service Catalogue](#using-consul-as-service-catalogue)
@@ -54,8 +55,7 @@ While some of these services _may_ end up deployed in Kubernetes within a specif
 The services can still be registered as [external services](https://kubernetes.io/docs/concepts/services-networking/service/#externalname) which services within a Kubernetes cluster can discover.
 
 However, one does not need to adopt the full apparatus of Kubernetes to benefit from this.
-
-Consul from Hashicorp is well-adapted to bridging legacy and cloud-native infrastructure, since it is designed to be [multi-platform](https://www.consul.io/use-cases/multi-platform-service-mesh.)
+Consul from Hashicorp is well-adapted to bridging legacy and cloud-native infrastructure, since it is designed to be [multi-platform](https://www.consul.io/use-cases/multi-platform-service-mesh).
 I wanted to investigate how it could be used together with existing infrastructure in order to improve the UX of communities which have adopted modern tooling but nevertheless need to use existing federated resources.
 
 Before we get to the big picture stuff though, let's get down in the weeds to see how this could be done effectively.
@@ -65,7 +65,7 @@ Before we get to the big picture stuff though, let's get down in the weeds to se
 The source of truth hasn't changed, and we don't want to break the Service Management standard we're used to: [FitSM](https://www.fitsm.eu/).
 Rather, we want to use existing structures to improve UX.
 
-Service discovery can be considered part of the Configuration Management process (CONFM), which has the specific requirements[^FitSMCONFM]:
+Service discovery can be considered part of the Configuration Management process (CONFM), which has the following specific requirements[^FitSMCONFM] according to the standard:
 
 - **PR11.1** The scope of configuration management shall be defined together with the types of configuration items (CIs) and relationships to be considered.
 - **PR11.2** The level of detail of configuration information shall be sufficient to support effective control over CIs.
@@ -126,7 +126,6 @@ This is implemented as an arbitrary `program` by the user (me), which returns a 
 I wrote it in Python:
 
 {% highlight python %}
-
 #!/bin/env python3
 import requests
 import xmltodict
@@ -150,7 +149,9 @@ This queries the GOCDB to get the `Top-BDII` service endpoints.
 The HTTP call is unauthenticated and returns an XML response which we parse into JSON.
 The JSON is added to an `output` dict which is returned to Terraform via `stdin` as required.
 
-#### External Consul Node
+
+#### External Consul Node 
+<!-- markdownlint-disable MD001 -->
 
 We now create single external node (`EGI`) to keep things simple, where we can register all of the declared services[^ExternalNode].
 We declare it as "external" using the node metadata, so that the monitor can discover it and monitor services on it:
