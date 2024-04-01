@@ -22,7 +22,7 @@ defaults:
 destination: _site
 paginate: 10
 permalink: /:year/:month/:title/
-markdown: kramdown
+markdown: redcarpet
 highlighter: rouge
 
 sass:
@@ -35,5 +35,5 @@ kramdown:
   # do not replace newlines by <br>s
   hard_wrap: false
 
-plugins: ['jekyll-paginate', 'jekyll-toc']
+plugins: ['jekyll-paginate', 'jekyll-toc', 'jemoji']
 exclude: ['README.md', 'Gemfile', 'Gemfile.lock', 'screenshot.png']
