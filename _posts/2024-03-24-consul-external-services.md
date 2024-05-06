@@ -149,8 +149,7 @@ This queries the GOCDB to get the `Top-BDII` service endpoints.
 The HTTP call is unauthenticated and returns an XML response which we parse into JSON.
 The JSON is added to an `output` dict which is returned to Terraform via `stdin` as required.
 
-
-#### External Consul Node 
+#### External Consul Node
 <!-- markdownlint-disable MD001 -->
 
 We now create single external node (`EGI`) to keep things simple, where we can register all of the declared services[^ExternalNode].
