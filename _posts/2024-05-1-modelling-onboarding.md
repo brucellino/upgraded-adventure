@@ -1,7 +1,7 @@
 ---
-title: Modelling onboarding
+title: Attracting and retaining new users
 layout: post
-description: To seek perfection, you must see the big picture
+description: A deep dive into the user experience during training sessions
 category: egi
 toc: true
 tags:
@@ -267,10 +267,77 @@ Join VO
 
 The cleanup task is similar, but logs into Check-In and populates a file with EPUIDs to be sent to the Check-In admin for deletion.
 
-## Discussion: have we really eliminated toil
+## Discussion
+
+### Have we really eliminated toil
 
 We now have two simple tasks that have been codified: a repeatable procedure which can be reliably performed by a computer!
 **We have removed the work from the Operator**, eliminating part of the toil in this procedure.
+We have written these tasks to perform actors as a single role so far -- that of the prospective user
+
+1. The creation of the users in the IDP -- this is perhaps already encoded, but does not notify the next actor in the sequence (Operator)
+1. Approval of the VO registration request -- this can be done by a VO admin, either in bulk via the API, or as part of the registration process, but requires a change in actor. Currently the notifications are handled via Check-In's builtin notification systems, so there is a connection between these two procedures (request and approval of VO membership).
+1. The user need to be notified about their credentials. This is probably done in person by the training instructor. Since this involves the transfer of sensitive data, it's probably a good idea to transfer this information in person.
+1. Users still need to be removed from Check-In by the Check-In admin.
+
+### Have we improved the user's experience
+
+With this pre-registration in place, let's take a look at how the attendee experiences the training.
+Let's remember that we have just a few hours to convince them that they should use our services, and that their decision will be based on their experience of the service itself -- does it actually provide them with value?
+Taking a closer look at that hypothetical "good" experience we mentioned above, from the user's point of view it looks like this:
+
+<div class="mermaid">
+---
+title:  User
+config:
+  journey:
+    actorColors:  ["#59c9a5", "#465775"]
+---
+journey
+  section Awareness
+    Discovers service via EGI page:  5:  User
+    Registers to event:  6:  User
+  section Access
+    Provides credentials:  5: Trainer
+    Logs into Check-In:  3: User
+    Releases Information:  3:  User
+    Authorised to use Service: 9: User
+</div>
+
+The user initially feels a bit of a dip in their enthusiasm -- when their curiosity is focussed on the service itself, every click we put between them and the service is a disappointment.
+However, here we design a ["peak-end" experience](https://en.wikipedia.org/wiki/Peak%E2%80%93end_rule) -- the final result of the user's journey through login is entirely positive as they are granted immediate access to the service.
+
+### Natural extension: RPA for training
+
+So, we have **removed some toil** and **improved the user experience** for these crucial first-touch events -- we can probably consider this an unconditional win!
+But improvement is itself a journey, not a destination, so let's consider what would be the natural extension of this improvement, for next time.
+
+The goals here are the same: Create a satisfying experience for new users in a training environment, while eliminating toil from the people involved.
+
+Let's consider that we have a lot of time between when the user _registers_ for the event, and when they actually _participate_ to the event.
+We could use this time to enable an email drip campaign to help the approach the biggest obstacle of all, which is also only experienced once at the beginning: signup to Check-In.
+
+This in fact consists of two different tasks -
+
+- Create an entity/account in Check-In
+- Request to join a VO
+
+Each of these tasks should end on a positive note and should be completed "quickly", giving the impression that they are making progress, and achieving results.
+
+Now, we don't yet have an email service which can be programmed via API with transactional emails, but creating something like that isn't hard.
+We could imagine a series of hooks starting from the first interaction of the new user -- the registration for the event in Indico -- with a persistence layer to keep track of progression, to implement such an end-to-end workflow for nudging users onto the service before the training event.
+This would result in the same experience as what we have just shown for pre-registration, but without the downside of having to overcome the registration process after the training.
+
+This is a very common approach for any cloud service or SaaS, since it's a well-known heuristic that users are easily distracted and discouraged by longer onboarding paths.
+
+Another aspect which we need to better perform is some actual user research while new users are onboarded.
+How do they really feel when accessing our services for the first time?
+What are they really thinking as they go through the motions of creating accounts and requesting access to service?
+It would be good to have some better feedback based on consistent user research _during_ the event, rather than responding to surveys after the fact.
+
+Finally, we can indeed define _golden paths_ for new users, and these can be extended from first touch to production usage, with the adoption of these RPA tools and a little bit of automation.
+
+At the end of the day, this is all about **keeping the customer engaged**, making sure they **achieve small, continuous wins**, and ensuring that we **demonstrate utility first**.
 
 ## Footnotes and References
 [^eliminate_toil]: See [The Google SRE book](https://sre.google/sre-book/eliminating-toil/) for more.
