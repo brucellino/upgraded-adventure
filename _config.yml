@@ -1,28 +1,28 @@
 # Site settings
 title: Upgraded Adventure
 encoding: utf-8
-description: 'Upgraded Adventures of Bruce Becker'
-url: 'https://www.brucellino.dev'
-baseurl: ''
+description: "Upgraded Adventures of Bruce Becker"
+url: "https://www.brucellino.dev"
+baseurl: ""
 author:
-  name: 'Bruce Becker'
+  name: "Bruce Becker"
   email: brucellino@hey.com
   twitter_username: brusisceddu
-  github_username:  brucellino
-  linkedin_username:  brucellino
+  github_username: brucellino
+  linkedin_username: brucellino
 
 defaults:
   - scope:
-      path: ''
-      type: 'posts'
+      path: ""
+      type: "posts"
     values:
-        layout: 'post'
+      layout: "post"
 
 # Build settings
 destination: _site
 paginate: 10
 permalink: /:year/:month/:title/
-markdown: redcarpet
+markdown: kramdown
 highlighter: rouge
 
 sass:
@@ -34,6 +34,17 @@ kramdown:
   input: GFM
   # do not replace newlines by <br>s
   hard_wrap: false
+  toc_levels: 1..6
 
-plugins: ['jekyll-paginate', 'jekyll-toc', 'jemoji']
-exclude: ['README.md', 'Gemfile', 'Gemfile.lock', 'screenshot.png']
+plugins: ["jekyll-paginate", "jekyll-toc", "jemoji"]
+exclude: ["README.md", "Gemfile", "Gemfile.lock", "screenshot.png"]
+toc:
+  min_level: 1
+  max_level: 6
+  ordered_list: false
+  no_toc_section_class: no_toc_section
+  list_id: toc
+  list_class: section-nav
+  sublist_class: ""
+  item_class: toc-entry
+  item_prefix: toc-
