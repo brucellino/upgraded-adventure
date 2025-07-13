@@ -63,3 +63,85 @@ pre.highlight code,
 .small {
   font-size: smaller;
 }
+
+/* Table of Contents Styling */
+#markdown_toc {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.25rem;
+  padding: 1rem;
+  margin: 1rem 0 2rem 0;
+  font-size: 0.9rem;
+}
+
+#markdown_toc:before {
+  content: "Table of Contents";
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+#markdown_toc ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+#markdown_toc ul ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+#markdown_toc li {
+  margin: 0.25rem 0;
+  line-height: 1.4;
+}
+
+#markdown_toc a {
+  color: #007bff;
+  text-decoration: none;
+  border-bottom: none;
+}
+
+#markdown_toc a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Alternative TOC styling for jekyll-toc plugin */
+.section-nav {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.25rem;
+  padding: 1rem;
+  margin: 1rem 0 2rem 0;
+  font-size: 0.9rem;
+}
+
+.section-nav ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.section-nav ul ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.section-nav li {
+  margin: 0.25rem 0;
+  line-height: 1.4;
+}
+
+.section-nav a {
+  color: #007bff;
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.section-nav a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
