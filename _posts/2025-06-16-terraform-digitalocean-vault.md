@@ -6,6 +6,7 @@ category: architecture
 toc: true
 tags:
   - blog
+  - platform-engineering
   - terraform
   - hashicorp
   - vault
