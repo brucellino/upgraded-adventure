@@ -1,0 +1,6 @@
+[tools]
+ruby = "3.2.0"
+
+[tasks."bundle:install"]
+description = "Install gem dependencies"
+run = "bundle install"
