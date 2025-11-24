@@ -49,7 +49,7 @@ This is the first step in being able to see the risk of the system: the simple a
 The key capability however is being able to take **appropriate action** based on whether a given component is known to contain a given vulnerability.
 Vulnerabilities do not inherently carry risk, however, since they must be exploitable in order to pose a threat, and whether they are exploitable or not depends on several factors, including the configuration and deployment of that component in the actual system.
 
-Nonetheless, the ability to map CVEs to components allows us to locate points of investigation, and perhaps even keep an audit trail of the system's posture.
+Nonetheless, the ability to map CVEs[^cve] to components allows us to locate points of investigation, and perhaps even keep an audit trail of the system's posture.
 
 ## Owning Risk
 
@@ -63,9 +63,9 @@ The point is that it in order to ensure that the system as a whole is secure, it
 ## Where have I seen this before
 
 Way back in before 2020 some time, I forget exactly when, I was working in the SANREN group at the Council for Scientific and Industrial Research (CSIR) in Pretoria, South Africa.
-SANREN stands for "South African National Research and Education Network", and aside from provisioning high-capacity fibre connections throughout South African research institutions and universities, it also had the mandate to deliver services to these customers.
+SANREN stands for[ "South African National Research and Education Network"](https://www.sanren.ac.za), and aside from provisioning high-capacity fibre connections throughout South African research institutions and universities, it also had the mandate to deliver services to these customers.
 One of these services was the South African National Grid, which I was responsible for, which coordinated the distributed computing infrastructure offered by the universities and laboratories connected to the SANREN network.
-However, SANREN was very active in providing end-user services such as the identity federation, on-demand file transfer between individuals, _etc_.
+However, SANREN was very active in providing [end-user services](https://www.sanren.ac.za/services/) such as the identity federation, on-demand file transfer between individuals, _etc_.
 Most of these were simply instantiations of a product commonly-used by peers in the research networking community.
 These surely provided some value to the communities served by the infrastructure, but they were too generic to be considered invaluable.
 The real wins were where we could give actionable advice to customers.
@@ -85,7 +85,7 @@ By its very nature, it is only perceived negatively.
 A second consideration is whether there is a direct feedback loop between the end users of the services offered by the infrastructure and those who actually pay for it (the customer).
 In the absence of such a loop, the sustainability of the infrastructure, depending on its continued viability, requires arduous measurement and reporting of the customer satisfaction and usage metrics, which inevitably drives up the cost and reduces the efficiency.
 Instead, what if the infrastructure provider itself provided services _directly to the customer_?
-In SANREN's case, these are typically the Information Technology departments of the institutes served by the network.
+In SANREN's case, these are typically the Information Technology departments of the institutes served by the network[^asaudit].
 These IT organisations are comprised of IT professionals, with their budget directly allocated to IT services _for the institute_.
 Part of their mission is usually to protect the network and IT resources associated with them, either within their institute or across the network in the case of research and scientific collaborations.
 
@@ -95,7 +95,7 @@ This would have been a service provided directly to the customer, providing a st
 
 It was my buddy Schalk Peach way back around 2017-2018 who helped me understand how powerful this feedback loop between vulnerability, component and person would be.
 He was a postgrad student at the CSIR SANREN team during my last few years there, and we had almost daily conversations about the workflows and entity models that would be involved in providing a service like this.
-At the time, we were focussed on perimeter security and directing customer network administrators to specific mitigation actions based on the unintelligible vulnerability reports from Nessus.
+At the time, we were focussed on perimeter security and directing customer network administrators to specific mitigation actions based on the unintelligible vulnerability reports from [Nessus](https://www.tenable.com/products/nessus)[^nessus].
 
 Every now again I think about him and how far ahead of the curve he was.
 
@@ -105,7 +105,7 @@ Now I'm part of the team delivering a managed service to researchers on behalf o
 A customer like the EC does not mess around when it comes to compliance and quality, and the system we were building is delivered by a great number of independent contractors, so I knew that assuring all interested parties that the system was secure and up to date would require specific tooling.
 Indeed at the outset my mind flew right back to Schalk and his magical vulnerability-remedy system... if only we had something like that to observe and track our dependencies!
 
-Well, it turns out that in the decade or so since I last bothered myself with platform security, the OWASP foundation has brought a great many projects to maturity, including one called "Dependency Track".
+Well, it turns out that in the decade or so since I last bothered myself with platform security, the OWASP foundation has brought a great many projects to maturity, including one called ["Dependency Track"](https://dependencytrack.org).
 
 ### Tracking dependencies, measuring risk, ensuring compliance
 
@@ -119,14 +119,14 @@ We ended up bolting on a custom notification handler to Dependency Track to allo
 
 ### Services in the Security Plane of the platform
 
-In the larger context of providing a platform providing support functions for the delivery of a wide set of services, Dependency Track falls cleanly into the "Security Plane".
+In the larger context of providing a [platform providing support functions for the delivery of a wide set of services](https://platformengineering.org/platform-tooling), Dependency Track falls cleanly into the "Security Plane".
 The final goal is not measurement and visibility, but actually taking remedial action, we should envision the connection of task and issue tracking services with the dependency tracker.
 However, dependencies of software components are not the only source of risk and security vulnerability in the system.
 Misconfiguration and insufficient resources can also contribute to security risks, or risks of denial of service.
 These are detected with other tools, such as penetration and load testing tools.
 These findings too are associated with specific components, owned by specific people in the organisation.
 
-This could be done with DefectDojo, another tool in the OWASP stable.
+This could be done with [DefectDojo](https://defectdojo.com/), another tool in the OWASP stable.
 
 These of course only address the system design and architecture.
 There are of course also the operational aspects, the day-to-day events happening in the system, and the inevitable attacks it will face if connected to the internet.
@@ -142,3 +142,12 @@ We gain insight into component-level risk, the ability to map that risk to actua
 With the addition of a SIEM, we would be able to have real-time observability into security events, and thus ensure not only the architectural security of the system, but also its operational security.
 
 Total visibility and collaboration between platform engineers, SRE and service owners is the goal, and we are within its reach.
+
+
+---
+
+# Footnotes and References  
+
+[^cve]: Common Vulnerabilities and Exposures (CVE) is a dictionary of publicly known information security vulnerabilities and exposures. CVE is maintained by the MITRE Corporation.
+[^asaudit]: The Association of South African University Directors of IT (ASAUDIT) was in my understanding the interface between the infrastructure provider and the institutes -- it has apparently transformed into [Higher Education IT South Africa](https://heitsa.ac.za/)
+[^nessus]: I think it was Nessus, but it was a while ago. I do remember that it was open source at the time, whatever the tool was.
