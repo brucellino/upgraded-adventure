@@ -143,7 +143,6 @@ With the addition of a SIEM, we would be able to have real-time observability in
 
 Total visibility and collaboration between platform engineers, SRE and service owners is the goal, and we are within its reach.
 
-
 ---
 
 # Footnotes and References  
