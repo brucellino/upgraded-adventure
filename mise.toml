@@ -1,7 +1,7 @@
 [settings]
 auto_install = true
 [tools]
-ruby = "3.4.8"
+ruby = "4.0.7"
 
 [tasks."bundle:install"]
 description = "Install gem dependencies"
