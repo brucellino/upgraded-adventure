@@ -1,8 +1,13 @@
 [settings]
 auto_install = true
 [tools]
-ruby = "3.4.8"
+ruby = "3.4"
+prek = "0.5.5"
 
 [tasks."bundle:install"]
 description = "Install gem dependencies"
 run = "bundle install"
+
+[tasks."bundle:serve"]
+description = "Run the server"
+run = "bundle exec jekyll serve"

@@ -193,8 +193,8 @@ The first was the users and their authentication when bootstrapping and managing
 Patroni defines 3 users which it uses to manage postgres behind the scenes: `superuser`, `rewind` and `replication`.
 These should all have different credentials.
 
-I had stored them already in the platform Vault as secure KV pairs, so that was used in the template with a Vault lookup: `{{- with secret "hashiatho.me-v2/data_plane" }}`.
-Again the Nomad runtime variables gave me the port which postgres was served on in the deployment: `{{ env "NOMAD_ADDR_postgres" }}`
+I had stored them already in the platform Vault as secure KV pairs, so that was used in the template with a Vault lookup.
+Again the Nomad runtime variables gave me the port which postgres was served on in the deployment
 
 {% highlight yaml %}
 {% raw %}
