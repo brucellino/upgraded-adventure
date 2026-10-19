@@ -2,7 +2,7 @@
 auto_install = true
 [tools]
 ruby = "3.4"
-prek = "0.5.5"
+prek = "0.5.6"
 
 [tasks."bundle:install"]
 description = "Install gem dependencies"
