@@ -50,7 +50,7 @@ url_api = "https://api.github.com/repos/j178/prek/releases/assets/660929530"
 provenance = "github-attestations"
 
 [[tools.ruby]]
-version = "3.4.11"
+version = "3.4.12"
 backend = "core:ruby"
 specifiers = ["3.4"]
 
@@ -88,10 +88,10 @@ checksum = "sha256:5c22be44524312b3d433d68739bcc530633b1da5ef8ba0afa0a37680da17d
 url = "https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.11.tar.gz"
 
 [[tools.ruby]]
-version = "3.4.11"
+version = "3.4.12"
 backend = "core:ruby"
 specifiers = ["3.4"]
 
 [tools.ruby."platforms.windows-x64"]
-checksum = "sha256:0e301317ee6498bdb7e9db2cbcbc7b512e41802b89b495ea6a1c525b89271b38"
-url = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.4.11-2/rubyinstaller-3.4.11-2-x64.7z"
+checksum = "sha256:3806f164377824bcb17e1cf39b17d967e2bdc01e8547ce0254cd786dbe2cfe13"
+url = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.4.12-1/rubyinstaller-3.4.12-1-x64.7z"
