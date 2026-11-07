@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "allowCompoundWords": true,
+  "caseSensitive": true,
+  "dictionaries": [
+    "en-gb",
+    "companies",
+    "softwareTerms",
+    "misc"
+  ],
+  "language": "en-GB",
+  "userWords": [
+    "organisation",
+    "SANREN",
+    "postgrad",
+    "CSIR",
+    "organise"
+  ],
+  "words": [
+    "Schalk"
+  ]
+}
