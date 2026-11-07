@@ -7,7 +7,6 @@ baseurl: ""
 author:
   name: "Bruce Becker"
   email: brucellino@hey.com
-  twitter_username: brusisceddu
   github_username: brucellino
   linkedin_username: brucellino
 
@@ -36,7 +35,7 @@ kramdown:
   hard_wrap: false
   toc_levels: 1..6
 
-plugins: ["jekyll-paginate", "jekyll-toc", "jemoji"]
+plugins: ["jekyll-paginate", "jekyll-toc", "jemoji", "jekyll-feed", "jekyll-sitemap"]
 exclude: ["README.md", "Gemfile", "Gemfile.lock", "screenshot.png"]
 toc:
   min_level: 1
